@@ -9,7 +9,7 @@ return [
     'queue_name' => 'default_queue', // set to false in production
     'exchange_name' => 'default_exchange', // Allow the web server to send the content-length header
     'log_path' => 'message_queue.log',
-    'tps' => '10',
+    'delay' => 5000,
 
     // Monolog settings
     'logger' => [
