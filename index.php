@@ -36,7 +36,7 @@ $channel->exchange_declare($settings['exchange_name'], 'headers', false, true, f
 
 //$channel->queue_declare($settings['queue_name'], false, true, false, false);
 
-$channel->queue_declare($settings['queue_name'], false, false, false, false, false, new AMQPTable(array(
+$channel->queue_declare($settings['queue_name'], false, true, false, false, false, new AMQPTable(array(
     "x-dead-letter-exchange" => "delayed"
 )));
 
@@ -78,17 +78,19 @@ $app->get('/', function ($request, $response){
             ->write('Text missing');
     }
 
-    if (isset($_SESSION['count'])) {
+    if (isset($_SESSION['count']) && isset($_SESSION['data'])) {
         $count = $_SESSION['count'];
     }
     else {
         $count = 1;
+        $_SESSION['data'] = array();
     }
 
     $settings = require __DIR__.'/settings.php';
 
     if ($count == $settings['tps']) {
         $count = 1;
+        $_SESSION['data'] = array();
     }
     else {
         $count += 1;
@@ -98,18 +100,17 @@ $app->get('/', function ($request, $response){
 
     $channel = $GLOBALS['channel'];
 
-    $headers = new AMQPTable(array("x-delay" => 5000));
-    $message = new AMQPMessage($text, array('delivery_mode' => 2));
-    $message->set('application_headers', $headers);
-
-    $channel->batch_basic_publish($message, $settings['exchange_name']);
-
-    var_dump($count);
+    array_push($_SESSION['data'], $text);
 
     if ($count == $settings['tps']) {
-        $channel->publish_batch();
+        foreach ($_SESSION['data'] as $mes) {
+            $headers = new AMQPTable(array("x-delay" => 5000));
+            $message = new AMQPMessage($mes, array('delivery_mode' => 2));
+            $message->set('application_headers', $headers);
+            $channel->basic_publish($message, $settings['exchange_name']);
+        }
     }
-    
+
     return $response->withStatus(200);
 });
 
