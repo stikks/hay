@@ -84,8 +84,6 @@ $app->get('/', function ($request, $response){
 
     $channel = $GLOBALS['channel'];
 
-    array_push($_SESSION['data'], $text);
-
     $headers = new AMQPTable(array("x-delay" => $settings['delay']));
     $message = new AMQPMessage($text, array('delivery_mode' => 2));
     $message->set('application_headers', $headers);
