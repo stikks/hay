@@ -6,10 +6,10 @@
  * Time: 3:34 PM
  */
 return [
-    'queue_name' => 'queue', // set to false in production
-    'exchange_name' => 'exchange', // Allow the web server to send the content-length header
-    'log_path' => '/var/log/message_queue.log',
-    'channels' => '10',
+    'queue_name' => 'default_queue', // set to false in production
+    'exchange_name' => 'default_exchange', // Allow the web server to send the content-length header
+    'log_path' => 'message_queue.log',
+    'tps' => '10',
 
     // Monolog settings
     'logger' => [

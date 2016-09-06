@@ -1,6 +1,7 @@
 <?php
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
+use PhpAmqpLib\Wire\AMQPTable;
 
 if (PHP_SAPI == 'cli-server') {
     // To help the built-in PHP dev server, check if the request was actually for
@@ -27,9 +28,17 @@ $settings = require __DIR__.'/settings.php';
 $GLOBALS['channel'] = $channel;
 $GLOBALS['connection'] = $connection;
 
-$channel->exchange_declare($settings['exchange_name'], 'headers', false, true, false);
+//$channel->exchange_declare($settings['exchange_name'], 'headers', false, true, false);
 
-$channel->queue_declare($settings['queue_name'], false, true, false, false);
+$channel->exchange_declare($settings['exchange_name'], 'headers', false, true, false, false, false, new AMQPTable(array(
+    "x-delayed-type" => "headers"
+)));
+
+//$channel->queue_declare($settings['queue_name'], false, true, false, false);
+
+$channel->queue_declare($settings['queue_name'], false, false, false, false, false, new AMQPTable(array(
+    "x-dead-letter-exchange" => "delayed"
+)));
 
 $channel->queue_bind($settings['queue_name'], $settings['exchange_name']);
 
@@ -69,12 +78,37 @@ $app->get('/', function ($request, $response){
             ->write('Text missing');
     }
 
+    if (isset($_SESSION['count'])) {
+        $count = $_SESSION['count'];
+    }
+    else {
+        $count = 1;
+    }
+
+    $settings = require __DIR__.'/settings.php';
+
+    if ($count == $settings['tps']) {
+        $count = 1;
+    }
+    else {
+        $count += 1;
+    }
+
+    $_SESSION['count'] = $count;
+
     $channel = $GLOBALS['channel'];
-    
-    $msg = new AMQPMessage($text);
-    $channel->batch_basic_publish($msg, 'exchange');
-    
-    $channel->publish_batch();
+
+    $headers = new AMQPTable(array("x-delay" => 5000));
+    $message = new AMQPMessage($text, array('delivery_mode' => 2));
+    $message->set('application_headers', $headers);
+
+    $channel->batch_basic_publish($message, $settings['exchange_name']);
+
+    var_dump($count);
+
+    if ($count == $settings['tps']) {
+        $channel->publish_batch();
+    }
     
     return $response->withStatus(200);
 });
