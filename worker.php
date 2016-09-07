@@ -16,7 +16,7 @@ $callback = function($msg) {
 
     $file = 'messages.log';
     $current = file_get_contents($file);
-    $now = new DateTime( DateTimeZone::AFRICA);
+    $now = new DateTime("now", new DateTimeZone("Africa/Lagos"));
     $_date = $now->format('Y-m-d H:i:s');
     $current .= '[DATETIME:'.$_date.'][STATUS:Sent SMS][SMSC:'.$nativeData['smsc'].'][FROM:'.$nativeData['from'].'][TO:'.$nativeData['to'].'][MSG:'.$msg->body.']';
     $current .= "\n";
