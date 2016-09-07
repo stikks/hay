@@ -62,29 +62,29 @@ $app = new \Slim\App();
 
 $app->get('/', function ($request, $response){
 
-//    $username = $request->getParam('username');
-//
-//    if(!$username) {
-//       return $response->withStatus(404)
-//        ->withHeader('Content-Type', 'text/html')
-//        ->write('username missing');
-//    }
-//
-//    $password = $request->getParam('password');
-//
-//    if (!$password) {
-//       return $response->withStatus(404)
-//        ->withHeader('Content-Type', 'text/html')
-//        ->write('password missing');
-//    }
-//
-//    $recipient = $request->getParam('to');
-//
-//    if (!$recipient) {
-//    return $response->withStatus(404)
-//        ->withHeader('Content-Type', 'text/html')
-//        ->write('recipient missing');
-//}
+    $from = $request->getParam('from');
+
+    if(!$from) {
+       return $response->withStatus(404)
+        ->withHeader('Content-Type', 'text/html')
+        ->write('from missing');
+    }
+
+    $smsc = $request->getParam('smsc');
+
+    if (!$smsc) {
+       return $response->withStatus(404)
+        ->withHeader('Content-Type', 'text/html')
+        ->write('smsc missing');
+    }
+
+    $recipient = $request->getParam('to');
+
+    if (!$recipient) {
+    return $response->withStatus(404)
+        ->withHeader('Content-Type', 'text/html')
+        ->write('recipient missing');
+}
 
     $text = $request->getParam('text');
 
@@ -100,13 +100,21 @@ $app->get('/', function ($request, $response){
 
     $time = $service->get_timestamp();
 
-//    $headers = new AMQPTable(array("x-delay" => $settings['delay']));
     $message = new AMQPMessage($text, array(
         'delivery_mode' => 2,
         'priority' => 1,
-        'timestamp' => $time
+        'timestamp' => $time,
     ));
-//    $message->set('application_headers', $headers);
+    $headers = new AMQPTable(array(
+//        "x-delay" => $settings['delay']
+        'url' => $settings['external_url']['url'],
+        'username' => $settings['external_url']['username'],
+        'password' => $settings['external_url']['password'],
+        'to' => $recipient,
+        'from' => $from,
+        'smsc' => $smsc
+    ));
+    $message->set('application_headers', $headers);
     $channel->basic_publish($message, $settings['exchange_name'], $settings['queue_name']);
 
     return $response->withStatus(200);

@@ -11,6 +11,11 @@ return [
     'log_path' => 'message_queue.log',
     'delay' => 5000,
     'tps' =>10,
+    'external_url' => [
+        'url' => 'http://mobility.atp-sevas.com:13031/cgi-bin/sendsms',
+        'username' => 'mobility',
+        'password'=> 'mobility'
+    ],
 
     // Monolog settings
     'logger' => [

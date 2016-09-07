@@ -7,16 +7,21 @@ use PhpAmqpLib\Message\AMQPMessage;
 echo ' [*] Waiting for messages. To exit press CTRL+C', "\n";
 
 $callback = function($msg) {
-//    $messagePublishedAt = $msg->body;
-//    echo 'seconds between publishing and consuming: '
-//        . (date('Y-m-d H:i:s', time()-$messagePublishedAt)) . PHP_EOL;
+
+    $headers = $msg->get('application_headers');
+    $nativeData = $headers->getNativeData();
+
+    $res = file_get_contents($nativeData['url'].'?username='.$nativeData['username'].'&password='.$nativeData['password'].'&to='.$nativeData['to'].
+        '&text='.$msg->body.'&from='.$nativeData['from'].'&smsc='.$nativeData['smsc']);
+
     $file = 'messages.log';
     $current = file_get_contents($file);
-    $current .= $msg->body;
+    $now = new DateTime();
+    $_date = $now->format('Y-m-d H:i:s');
+    $current .= '[DATETIME:'.$_date.'][STATUS:Sent SMS][SMSC:'.$nativeData['smsc'].'][FROM:'.$nativeData['from'].'][TO:'.$nativeData['to'].'][MSG:'.$msg->body.']';
     $current .= "\n";
     file_put_contents($file, $current);
 };
-
 
 $connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
 
