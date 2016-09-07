@@ -41,11 +41,11 @@ $GLOBALS['settings'] = require __DIR__.'/settings.php';;
 
 $settings = $GLOBALS['settings'];
 
-$channel->exchange_declare($settings['exchange_name'], 'headers', false, true, false);
+//$channel->exchange_declare($settings['exchange_name'], 'headers', false, true, false);
 
-//$channel->exchange_declare($settings['exchange_name'], 'headers', false, true, false, false, false, new AMQPTable(array(
-//    "x-delayed-type" => "headers"
-//)));
+$channel->exchange_declare($settings['exchange_name'], 'headers', false, true, false, false, false, new AMQPTable(array(
+    "x-delayed-type" => "headers"
+)));
 
 $channel->queue_declare($settings['queue_name'], false, true, false, false);
 
@@ -104,15 +104,18 @@ $app->get('/', function ($request, $response){
         'delivery_mode' => 2,
         'priority' => 1,
         'timestamp' => $time,
+        'persistent' => true,
+        'madatory' => true
     ));
     $headers = new AMQPTable(array(
-//        "x-delay" => $settings['delay']
+        "x-delay" => $settings['delay'],
         'url' => $settings['external_url']['url'],
         'username' => $settings['external_url']['username'],
         'password' => $settings['external_url']['password'],
         'to' => $recipient,
         'from' => $from,
-        'smsc' => $smsc
+        'smsc' => $smsc,
+        'timestamp' => $time
     ));
     $message->set('application_headers', $headers);
     $channel->basic_publish($message, $settings['exchange_name']);
