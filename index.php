@@ -107,9 +107,9 @@ $app->get('/', function ($request, $response){
     ));
     $headers = new AMQPTable(array(
         "x-delay" => $settings['delay'],
-        'url' => $settings['extended_url']['url'],
-        'password' => $settings['extended_url']['password'],
-        'username' => $settings['extended_url']['username'],
+        'url' => $settings['external_url']['url'],
+        'password' => $settings['external_url']['password'],
+        'username' => $settings['external_url']['username'],
         'to' => $recipient,
         'from' => $from,
         'timestamp'=> $time
