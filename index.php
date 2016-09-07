@@ -112,7 +112,8 @@ $app->get('/', function ($request, $response){
         'username' => $settings['external_url']['username'],
         'to' => $recipient,
         'from' => $from,
-        'timestamp'=> $time
+        'timestamp'=> $time,
+        'smsc' => $smsc
     ));
     $message->set('application_headers', $headers);
     $channel->basic_publish($message, $settings['exchange_name'], $settings['queue_name']);
