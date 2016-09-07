@@ -105,8 +105,16 @@ $app->get('/', function ($request, $response){
         'priority' => 1,
         'timestamp' => $time
     ));
-//    $headers = new AMQPTable(array("x-delay" => $settings['delay']));
-//    $message->set('application_headers', $headers);
+    $headers = new AMQPTable(array(
+        "x-delay" => $settings['delay'],
+        'url' => $settings['extended_url']['url'],
+        'password' => $settings['extended_url']['password'],
+        'username' => $settings['extended_url']['username'],
+        'to' => $recipient,
+        'from' => $from,
+        'timestamp'=> $time
+    ));
+    $message->set('application_headers', $headers);
     $channel->basic_publish($message, $settings['exchange_name'], $settings['queue_name']);
 
     return $response->withStatus(200);
