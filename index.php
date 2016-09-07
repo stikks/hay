@@ -43,7 +43,7 @@ $settings = $GLOBALS['settings'];
 
 //$channel->exchange_declare($settings['exchange_name'], 'headers', false, true, false);
 
-$channel->exchange_declare($settings['exchange_name'], 'x-delayed-message', false, true, false, false, false, new AMQPTable(array(
+$channel->exchange_declare($settings['exchange_name'], 'headers', false, true, false, false, false, new AMQPTable(array(
     "x-delayed-type" => "headers"
 )));
 
