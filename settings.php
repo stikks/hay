@@ -10,6 +10,7 @@ return [
     'exchange_name' => 'default_exchange', // Allow the web server to send the content-length header
     'log_path' => 'message_queue.log',
     'delay' => 5000,
+    'tps' =>10,
 
     // Monolog settings
     'logger' => [
