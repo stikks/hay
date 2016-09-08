@@ -11,8 +11,9 @@ $callback = function($msg) {
     $headers = $msg->get('application_headers');
     $nativeData = $headers->getNativeData();
 
-    file_get_contents($nativeData['url'].'?username='.$nativeData['username'].'&password='.$nativeData['password'].'&to='.$nativeData['to'].
-        '&text='.$msg->body.'&from='.$nativeData['from'].'&smsc='.$nativeData['smsc'].'&dlr_mask='.$nativeData['dlr_mask'].'&dlr_url='.$nativeData['dlr_url']);
+    $url = ''.$nativeData['url'].'?username='.$nativeData['username'].'&password='.$nativeData['password'].'&to='.$nativeData['to']. '&text='.$msg->body.'&from='.$nativeData['from'].'&smsc='.$nativeData['smsc'].'&dlr_mask='.$nativeData['dlr_mask'].'&dlr_url='.$nativeData['dlr_url'].'';
+
+    file_get_contents($url);
 
     $file = 'messages.log';
     $current = file_get_contents($file);

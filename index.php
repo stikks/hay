@@ -149,7 +149,7 @@ $app->group('', function (){
         $domain = $settings['external_url']['domain'];
         $route = $settings['external_url']['route'];
 
-        $url = 'http://'. $host. $domain. $port. $route;
+        $url = 'http://'. $host. '.'.  $domain. ':'. $port. $route;
 
         $headers = new AMQPTable(array(
             "x-delay" => $settings['delay'],
