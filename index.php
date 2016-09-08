@@ -103,10 +103,36 @@ $app->group('', function (){
             $dlr_mask = $settings['dlr_mask'];
         }
 
-        $dlr_url = $request->getParam('dlr_url');
+        $dlr = $request->getParam('dlr_url');
 
-        if (!$dlr_url) {
-            $dlr_url = $settings['dlr_url'];
+        if (!$dlr) {
+            $dlr = $settings['dlr_url'];
+        }
+
+        $dlr_url = urlencode(urldecode($dlr));
+
+        $username = $request->getParam('username');
+
+        if(!$username) {
+            $username = $settings['external_url']['username'];
+        }
+
+        $password = $request->getParam('password');
+
+        if (!$password) {
+            $password = $settings['external_url']['password'];
+        }
+
+        $host = $request->getParam('host');
+
+        if (!$host) {
+            $host = $settings['external_url']['host'];
+        }
+
+        $port = $request->getParam('port');
+
+        if (!$port) {
+            $port = $settings['external_url']['port'];
         }
 
         $channel = $GLOBALS['channel'];
@@ -119,17 +145,23 @@ $app->group('', function (){
             'priority' => 1,
             'timestamp' => $time
         ));
+
+        $domain = $settings['external_url']['domain'];
+        $route = $settings['external_url']['route'];
+
+        $url = 'http://'. $host. $domain. $port. $route;
+
         $headers = new AMQPTable(array(
             "x-delay" => $settings['delay'],
-            'url' => $settings['external_url']['url'],
-            'password' => $settings['external_url']['password'],
-            'username' => $settings['external_url']['username'],
-            'to' => $recipient,
-            'from' => $from,
+            'url' => $url,
             'timestamp'=> $time,
             'smsc' => $smsc,
-            'dlr_mask' => $dlr_mask,
-            'dlr_url' => $dlr_url
+            'username' => $username,
+            'password' => $password,
+            'from' => $from,
+            'to' => $recipient,
+            'dlr_url' => $dlr_url,
+            'dlr_mask' => $dlr_mask
         ));
         $message->set('application_headers', $headers);
         $channel->basic_publish($message, $settings['exchange_name'], $settings['queue_name']);

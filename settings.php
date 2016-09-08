@@ -12,7 +12,10 @@ return [
     'delay' => 5000,
     'tps' =>10,
     'external_url' => [
-        'url' => 'http://sponge.atp-sevas.com:13031/cgi-bin/sendsms',
+        'domain' => 'atp-sevas.com',
+        'host' => 'sponge',
+        'port' => 13031,
+        'route' => '/cgi-bin/sendsms',
         'username' => 'sponge',
         'password'=> 'sponge'
     ],
