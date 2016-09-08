@@ -16,6 +16,8 @@ return [
         'username' => 'sponge',
         'password'=> 'sponge'
     ],
+    'dlr_mask' => 31,
+    'dlr_url' => 'http://sponge.atp-sevas.com/rabbitmq/dlr',
 
     // Monolog settings
     'logger' => [

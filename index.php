@@ -60,69 +60,86 @@ $channel->queue_bind($settings['queue_name'], $settings['exchange_name']);
 
 $app = new \Slim\App();
 
-$app->get('/', function ($request, $response){
+$app->group('', function (){
+    $this->get('/', function ($request, $response){
 
-    $from = $request->getParam('from');
+        $settings = require __DIR__.'/settings.php';
 
-    if(!$from) {
-       return $response->withStatus(404)
-        ->withHeader('Content-Type', 'text/html')
-        ->write('from missing');
-    }
+        $from = $request->getParam('from');
 
-    $smsc = $request->getParam('smsc');
+        if(!$from) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('from missing');
+        }
 
-    if (!$smsc) {
-       return $response->withStatus(404)
-        ->withHeader('Content-Type', 'text/html')
-        ->write('smsc missing');
-    }
+        $smsc = $request->getParam('smsc');
 
-    $recipient = $request->getParam('to');
+        if (!$smsc) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('smsc missing');
+        }
 
-    if (!$recipient) {
-    return $response->withStatus(404)
-        ->withHeader('Content-Type', 'text/html')
-        ->write('recipient missing');
-}
+        $recipient = $request->getParam('to');
 
-    $text = $request->getParam('text');
+        if (!$recipient) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('recipient missing');
+        }
 
-    if (!$text) {
-        return $response->withStatus(404)
-            ->withHeader('Content-Type', 'text/html')
-            ->write('Text missing');
-    }
-    $settings = require __DIR__.'/settings.php';
+        $text = $request->getParam('text');
 
-    $channel = $GLOBALS['channel'];
-    $service = $GLOBALS['service'];
+        if (!$text) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('Text missing');
+        }
 
-    $time = $service->get_timestamp();
+        $dlr_mask = $request->getParam('dlr_mask');
 
-    $message = new AMQPMessage($text, array(
-        'delivery_mode' => 2,
-        'priority' => 1,
-        'timestamp' => $time
-    ));
-    $headers = new AMQPTable(array(
-        "x-delay" => $settings['delay'],
-        'url' => $settings['external_url']['url'],
-        'password' => $settings['external_url']['password'],
-        'username' => $settings['external_url']['username'],
-        'to' => $recipient,
-        'from' => $from,
-        'timestamp'=> $time,
-        'smsc' => $smsc
-    ));
-    $message->set('application_headers', $headers);
-    $channel->basic_publish($message, $settings['exchange_name'], $settings['queue_name']);
+        if(!$dlr_mask) {
+            $dlr_mask = $settings['dlr_mask'];
+        }
 
-    return $response->withStatus(200);
-});
+        $dlr_url = $request->getParam('dlr_url');
 
-$app->get('/dlr', function ($request, $response) {
-    var_dump($request->getParams());
+        if (!$dlr_url) {
+            $dlr_url = $settings['dlr_url'];
+        }
+
+        $channel = $GLOBALS['channel'];
+        $service = $GLOBALS['service'];
+
+        $time = $service->get_timestamp();
+
+        $message = new AMQPMessage($text, array(
+            'delivery_mode' => 2,
+            'priority' => 1,
+            'timestamp' => $time
+        ));
+        $headers = new AMQPTable(array(
+            "x-delay" => $settings['delay'],
+            'url' => $settings['external_url']['url'],
+            'password' => $settings['external_url']['password'],
+            'username' => $settings['external_url']['username'],
+            'to' => $recipient,
+            'from' => $from,
+            'timestamp'=> $time,
+            'smsc' => $smsc,
+            'dlr_mask' => $dlr_mask,
+            'dlr_url' => $dlr_url
+        ));
+        $message->set('application_headers', $headers);
+        $channel->basic_publish($message, $settings['exchange_name'], $settings['queue_name']);
+
+        return $response->withStatus(200);
+    });
+
+    $this->get('/dlr', function ($request, $response) {
+        var_dump($request->getParams());
+    }); 
 });
 
 $app->run();

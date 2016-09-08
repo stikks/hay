@@ -12,13 +12,13 @@ $callback = function($msg) {
     $nativeData = $headers->getNativeData();
 
     $res = file_get_contents($nativeData['url'].'?username='.$nativeData['username'].'&password='.$nativeData['password'].'&to='.$nativeData['to'].
-        '&text='.$msg->body.'&from='.$nativeData['from'].'&smsc='.$nativeData['smsc']);
+        '&text='.$msg->body.'&from='.$nativeData['from'].'&smsc='.$nativeData['smsc'].'&dlr_mask='.$nativeData['dlr_mask'].'&dlr_url='.$nativeData['dlr_url']);
 
     $file = 'messages.log';
     $current = file_get_contents($file);
 //    $now = new DateTime("now", new DateTimeZone("Africa/Lagos"));
 //    $_date = $now->format('Y-m-d H:i:s');
-    $current .= '[DATETIME:'.$nativeData['timestamp'].'][STATUS:Sent SMS][SMSC:'.$nativeData['smsc'].'][FROM:'.$nativeData['from'].'][TO:'.$nativeData['to'].'][MSG:'.$msg->body.']';
+    $current .= '[DATETIME:'.$nativeData['timestamp'].'][STATUS: Accepted][SMSC:'.$nativeData['smsc'].'][FROM:'.$nativeData['from'].'][TO:'.$nativeData['to'].'][MSG:'.$msg->body.']';
     $current .= "\n";
     file_put_contents($file, $current);
 };
