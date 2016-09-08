@@ -19,6 +19,7 @@ return [
         'username' => 'sponge',
         'password'=> 'sponge'
     ],
+    'networks' => array("etisalat"=>10),
     'dlr_mask' => 31,
     'dlr_url' => 'http://sponge.atp-sevas.com/rabbitmq/dlr',
 

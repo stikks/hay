@@ -20,7 +20,7 @@ class Service
         $this->redis = $redis;
     }
 
-    public function get_timestamp() {
+    public function get_timestamp($limit) {
 
         try {
             $timestamp = (int)$this->redis->get('timestamp');
@@ -30,7 +30,6 @@ class Service
             }
 
             $count = (int)$this->redis->get('count');
-            $limit = (int)$GLOBALS['settings']['tps'];
 
             if ($count == $limit) {
                 $count = 1;

@@ -41,13 +41,14 @@ $GLOBALS['settings'] = require __DIR__.'/settings.php';;
 
 $settings = $GLOBALS['settings'];
 
-//$channel->exchange_declare($settings['exchange_name'], 'headers', false, true, false);
+$channel->exchange_declare('exchange', 'headers', false, true, false);
+$channel->queue_declare('queue', false, true, false, false);
+$channel->queue_bind('queue', 'exchange');
+
 
 $channel->exchange_declare($settings['exchange_name'], 'headers', false, true, false, false, false, new AMQPTable(array(
     "x-delayed-type" => "headers"
 )));
-
-//$channel->queue_declare('queue', false, true, false, false);
 
 $channel->queue_declare($settings['queue_name'], false, true, false, false, false, new AMQPTable(array(
     "x-dead-letter-exchange" => $settings['exchange_name'],
@@ -56,7 +57,6 @@ $channel->queue_declare($settings['queue_name'], false, true, false, false, fals
 )));
 
 $channel->queue_bind($settings['queue_name'], $settings['exchange_name']);
-//$channel->queue_bind('queue', $settings['exchange_name']);
 
 $app = new \Slim\App();
 
@@ -71,14 +71,6 @@ $app->group('', function (){
             return $response->withStatus(404)
                 ->withHeader('Content-Type', 'text/html')
                 ->write('from missing');
-        }
-
-        $smsc = $request->getParam('smsc');
-
-        if (!$smsc) {
-            return $response->withStatus(404)
-                ->withHeader('Content-Type', 'text/html')
-                ->write('smsc missing');
         }
 
         $recipient = $request->getParam('to');
@@ -135,16 +127,38 @@ $app->group('', function (){
             $port = $settings['external_url']['port'];
         }
 
+        $smsc = $request->getParam('smsc');
+
+        if (!$smsc) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('smsc missing');
+        }
+
+        if (in_array(strtolower($smsc), $settings['networks'])) {
+            $tps = $settings['networks'][strtolower($smsc)];
+        }
+        else {
+            $tps = $settings['tps'];
+        }
+
         $channel = $GLOBALS['channel'];
         $service = $GLOBALS['service'];
 
-        $time = $service->get_timestamp();
+        $time = $service->get_timestamp($tps);
 
-        $message = new AMQPMessage($text, array(
+        $message_params = array(
             'delivery_mode' => 2,
             'priority' => 1,
-            'timestamp' => $time
-        ));
+        );
+
+        $instant = $request->getParam('instant');
+
+        if (!$instant) {
+            array_push($message_params, array('timestamp' => $time));
+        }
+
+        $message = new AMQPMessage($text, $message_params);
 
         $domain = $settings['external_url']['domain'];
         $route = $settings['external_url']['route'];
@@ -170,8 +184,16 @@ $app->group('', function (){
     });
 
     $this->get('/dlr', function ($request, $response) {
-        var_dump($request->getParams());
-    }); 
+
+    });
+//
+//    $this->get('/billing', function ($request, $response) {
+//
+//    });
+//
+//    $this->get('/content', function ($request, $response) {
+//
+//    });
 });
 
 $app->run();
