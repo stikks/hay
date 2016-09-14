@@ -56,6 +56,8 @@ $channel->queue_declare($settings['queue_name'], false, true, false, false, fals
     'x-dead-letter-routing-key' => $settings['queue_name']
 )));
 
+$channel->queue_declare('persistent_sevas', false, true, false, false);
+
 $channel->queue_bind($settings['queue_name'], $settings['exchange_name']);
 
 $app = new \Slim\App();
@@ -184,6 +186,89 @@ $app->group('', function (){
     });
 
     $this->get('/dlr', function ($request, $response) {
+
+        $senderID = $request->getParam('sc');
+
+        if(!$senderID) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('sc missing');
+        }
+
+        $message = $request->getParam('msg');
+
+        if (!$message) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('msg missing');
+        }
+
+        $msisdn = $request->getParam('msisdn');
+
+        if (!$msisdn) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('msisdn missing');
+        }
+
+        $serviceID = $request->getParam('serv_id');
+
+        if (!$serviceID) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('serv_id missing');
+        }
+
+        $srcModule = $request->getParam('src_module');
+
+        if (!$srcModule) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('src_module missing');
+        }
+
+        $dlr = $request->getParam('dlr');
+
+        if (!$dlr) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('dlr missing');
+        }
+
+        $smsc = $request->getParam('smsc');
+
+        if (!$smsc) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('smsc missing');
+        }
+
+        $billingTime = $request->getParam('billing_time');
+
+        if (!$billingTime) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('billing_time missing');
+        }
+
+        $messageID = $request->getParam('msg_id');
+        $subscriptionType = $request->getParam('sub_type');
+        $serviceName = $request->getParam('serv_name');
+        $dp_retry = $request->getParam('dp_retry');
+
+        $channel = $GLOBALS['channel'];
+        $text = $serviceID. '*'. $msisdn. '*'. $senderID . '*SRCM'. $srcModule . '*'. $dlr . '*' . $smsc. '*'. $billingTime. '*';
+
+        $msg = new AMQPMessage($text);
+        $channel->basic_publish($msg, '', 'persistent_sevas');
+
+        $file = 'dlr.log';
+        $current = file_get_contents($file);
+        $current .= '[DATETIME:'. $billingTime .'][STATUS: Accepted][SMSC:'. $smsc .'][FROM:'.$senderID.'][TO:'.$msisdn.'][MSG:'.$message.']';
+        $current .= "\n";
+        file_put_contents($file, $current);
+
+        return $response->withStatus(202);
 
     });
 //
