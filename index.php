@@ -260,7 +260,9 @@ $app->group('', function (){
         $text = $serviceID. '*'. $msisdn. '*'. $senderID . '*SRCM'. $srcModule . '*'. $dlr . '*' . $smsc. '*'. $billingTime. '*';
 
         $msg = new AMQPMessage($text);
-        $channel->basic_publish($msg, '', 'persistent_sevas');
+        $service = $GLOBALS['service'];
+        $que = $service->get_dlr_queue();
+        $channel->basic_publish($msg, '', $que);
 
         $file = 'dlr.log';
         $current = file_get_contents($file);
@@ -271,14 +273,43 @@ $app->group('', function (){
         return $response->withStatus(202);
 
     });
-//
-//    $this->get('/billing', function ($request, $response) {
-//
-//    });
-//
-//    $this->get('/content', function ($request, $response) {
-//
-//    });
+
+    $this->get('/dlr/change', function ($request, $response) {
+
+        $queue = $request->getParam('queue');
+
+        if(!$queue) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('queue missing');
+        }
+
+        $service = $GLOBALS['service'];
+        $service->set_dlr_queue($queue);
+
+        return $response->withStatus(200)
+            ->withHeader('Content-Type', 'application/json')
+            ->write($queue);
+    });
+
+    $this->get('/queue/size', function ($request, $response) {
+
+        $queue = $request->getParam('queue');
+
+        if(!$queue) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('queue missing');
+        }
+
+        $channel = $GLOBALS['channel'];
+
+        $declaration = $channel->queue_declare($queue, false, true, false, false);
+
+        return $response->withStatus(200)
+            ->withHeader('Content-Type', 'application/json')
+            ->write($declaration[1]);
+    });
 });
 
 $app->run();

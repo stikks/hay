@@ -50,4 +50,21 @@ class Service
         return $timestamp;
     }
 
+    public function get_dlr_queue() {
+        
+        try {
+            $queue = $this->redis->get('persistent_sevas');
+        }
+        catch (\Exception $e) {
+            $queue = $this->redis->set('dlr_queue', 'persistent_sevas');
+        }
+        
+        return $queue;
+    }
+    
+    public function set_dlr_queue($queue) {
+        $this->redis->set('dlr_queue', $queue);
+        return true;
+    }
+
 }
