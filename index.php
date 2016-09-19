@@ -63,7 +63,7 @@ $channel->queue_bind($settings['queue_name'], $settings['exchange_name']);
 $app = new \Slim\App();
 
 $app->group('', function (){
-    $this->get('/', function ($request, $response){
+    $this->get('/sendsms', function ($request, $response){
 
         $settings = require __DIR__.'/settings.php';
 
@@ -190,9 +190,7 @@ $app->group('', function (){
         $senderID = $request->getParam('sc');
 
         if(!$senderID) {
-            return $response->withStatus(404)
-                ->withHeader('Content-Type', 'text/html')
-                ->write('sc missing');
+            $senderID = null;
         }
 
         $message = $request->getParam('msg');
@@ -253,7 +251,7 @@ $app->group('', function (){
 
         $service = $GLOBALS['service'];
         $channel = $GLOBALS['channel'];
-        
+
         $queue = $request->getParam('queue');
 
         if (!$queue) {
