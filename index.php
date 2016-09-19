@@ -272,10 +272,8 @@ $app->group('', function (){
         $channel->basic_publish($msg, '', $que);
 
         $file = 'dlr.log';
-        $current = file_get_contents($file);
-        $current .= '[DATETIME:'. $billingTime .'][STATUS: Accepted][SMSC:'. $smsc .'][FROM:'.$senderID.'][TO:'.$msisdn.'][MSG:'.$message.']';
-        $current .= "\n";
-        file_put_contents($file, $current);
+        $data = '[DATETIME:'. $billingTime .'][STATUS: Accepted][SMSC:'. $smsc .'][FROM:'.$senderID.'][TO:'.$msisdn.'][MSG:'.$message.']';
+        file_put_contents($file, $data.PHP_EOL, FILE_APPEND);
 
         return $response->withStatus(202);
 
