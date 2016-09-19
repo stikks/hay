@@ -251,17 +251,26 @@ $app->group('', function (){
                 ->write('billing_time missing');
         }
 
+        $service = $GLOBALS['service'];
+        $channel = $GLOBALS['channel'];
+        
+        $queue = $request->getParam('queue');
+
+        if (!$queue) {
+            $que = $service->get_dlr_queue();
+        }
+        else {
+            $que = $channel->queue_declare($queue, false, true, false, false);
+        }
+
         $messageID = $request->getParam('msg_id');
         $subscriptionType = $request->getParam('sub_type');
         $serviceName = $request->getParam('serv_name');
         $dp_retry = $request->getParam('dp_retry');
 
-        $channel = $GLOBALS['channel'];
         $text = $serviceID. '*'. $msisdn. '*'. $senderID . '*SRCM'. $srcModule . '*'. $dlr . '*' . $smsc. '*'. $billingTime. '*';
 
         $msg = new AMQPMessage($text);
-        $service = $GLOBALS['service'];
-        $que = $service->get_dlr_queue();
         $channel->basic_publish($msg, '', $que);
 
         $file = 'dlr.log';
