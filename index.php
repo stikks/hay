@@ -258,7 +258,7 @@ $app->group('', function (){
             $que = $service->get_dlr_queue();
         }
         else {
-            $que = $channel->queue_declare($que, false, true, false, false);
+            $channel->queue_declare($que, false, true, false, false);
         }
 
         $messageID = $request->getParam('msg_id');
