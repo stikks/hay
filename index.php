@@ -182,7 +182,10 @@ $app->group('', function (){
         $message->set('application_headers', $headers);
         $channel->basic_publish($message, $settings['exchange_name'], $settings['queue_name']);
 
-        return $response->withStatus(200);
+        $channel->close();
+
+        return $response->withStatus(202)
+            ->write('Task added to queue');
     });
 
     $this->get('/dlr', function ($request, $response) {
@@ -271,11 +274,14 @@ $app->group('', function (){
         $msg = new AMQPMessage($text);
         $channel->basic_publish($msg, '', $que);
 
-        $file = 'dlr.log';
-        $data = '[DATETIME:'. $billingTime .'][STATUS: Accepted][SMSC:'. $smsc .'][FROM:'.$senderID.'][TO:'.$msisdn.'][MSG:'.$message.']';
-        file_put_contents($file, $data.PHP_EOL, FILE_APPEND);
+//        $file = 'dlr.log';
+//        $data = '[DATETIME:'. $billingTime .'][STATUS: Accepted][SMSC:'. $smsc .'][FROM:'.$senderID.'][TO:'.$msisdn.'][MSG:'.$message.']';
+//        file_put_contents($file, $data.PHP_EOL, FILE_APPEND);
 
-        return $response->withStatus(202);
+        $channel->close();
+
+        return $response->withStatus(202)
+            ->write('Task added to queue');
 
     });
 
@@ -310,6 +316,8 @@ $app->group('', function (){
         $channel = $GLOBALS['channel'];
 
         $declaration = $channel->queue_declare($queue, false, true, false, false);
+
+        $channel->close();
 
         return $response->withStatus(200)
             ->withHeader('Content-Type', 'application/json')
