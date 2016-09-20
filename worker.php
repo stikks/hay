@@ -1,7 +1,8 @@
-
 <?php
 
-require __DIR__.'/connection.php';
+require_once __DIR__ . '/vendor/autoload.php';
+use PhpAmqpLib\Connection\AMQPStreamConnection;
+$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
 
 echo ' [*] Waiting for messages. To exit press CTRL+C', "\n";
 
@@ -23,7 +24,7 @@ $settings = require __DIR__.'/settings.php';
 
 $channel = $connection->channel();
 
-//$channel->basic_qos(null, 1, null);
+$channel->basic_qos(null, 1, null);
 
 $channel->basic_consume($settings['queue_name'], '', false, true, false, false, $callback);
 
