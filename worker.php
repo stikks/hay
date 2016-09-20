@@ -15,7 +15,6 @@ $callback = function($msg) {
 
     file_get_contents($url);
     $file = 'messages.log';
-//    $current = file_get_contents($file);
     $data = '[DATETIME:'.$nativeData['timestamp'].'][STATUS: Accepted][SMSC:'.$nativeData['smsc'].'][FROM:'.$nativeData['from'].'][TO:'.$nativeData['to'].'][MSG:'.$msg->body.']';
     file_put_contents($file, $data.PHP_EOL, FILE_APPEND);
 };
