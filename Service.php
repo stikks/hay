@@ -53,7 +53,7 @@ class Service
     public function get_dlr_queue() {
         
         try {
-            $queue = $this->redis->get('persistent_sevas');
+            $queue = $this->redis->get('dlr_queue');
         }
         catch (\Exception $e) {
             $queue = $this->redis->set('dlr_queue', 'persistent_sevas');

@@ -252,13 +252,13 @@ $app->group('', function (){
         $service = $GLOBALS['service'];
         $channel = $GLOBALS['channel'];
 
-        $queue = $request->getParam('queue');
+        $que = $request->getParam('queue');
 
-        if (!$queue) {
+        if (!$que) {
             $que = $service->get_dlr_queue();
         }
         else {
-            $que = $channel->queue_declare($queue, false, true, false, false);
+            $que = $channel->queue_declare($que, false, true, false, false);
         }
 
         $messageID = $request->getParam('msg_id');
