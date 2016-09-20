@@ -1,8 +1,7 @@
 
 <?php
-require_once __DIR__ . '/vendor/autoload.php';
-use PhpAmqpLib\Connection\AMQPStreamConnection;
-use PhpAmqpLib\Message\AMQPMessage;
+
+require __DIR__.'/connection.php';
 
 echo ' [*] Waiting for messages. To exit press CTRL+C', "\n";
 
@@ -19,8 +18,6 @@ $callback = function($msg) {
     $data = '[DATETIME:'.$nativeData['timestamp'].'][STATUS: Accepted][SMSC:'.$nativeData['smsc'].'][FROM:'.$nativeData['from'].'][TO:'.$nativeData['to'].'][MSG:'.$msg->body.']';
     file_put_contents($file, $data.PHP_EOL, FILE_APPEND);
 };
-
-$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
 
 $settings = require __DIR__.'/settings.php';
 
