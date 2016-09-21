@@ -244,12 +244,12 @@ $app->group('', function (){
                 ->write('smsc missing');
         }
 
-        $billingTime = $request->getParam('billing_time');
+        $requestTime = $request->getParam('request_time');
 
-        if (!$billingTime) {
+        if (!$requestTime) {
             return $response->withStatus(404)
                 ->withHeader('Content-Type', 'text/html')
-                ->write('billing_time missing');
+                ->write('request_time missing');
         }
 
         $service = $GLOBALS['service'];
@@ -269,7 +269,7 @@ $app->group('', function (){
         $serviceName = $request->getParam('serv_name');
         $dp_retry = $request->getParam('dp_retry');
 
-        $data = array('msisdn' => $msisdn, 'serv_id'=> $serviceID, 'scrm' => $srcModule, 'dlr' => $dlr, 'sender_id' => $senderID, 'smsc' => $smsc, 'billing_time'=>$billingTime);
+        $data = array('msisdn' => $msisdn, 'serv_id'=> $serviceID, 'scrm' => $srcModule, 'dlr' => $dlr, 'sender_id' => $senderID, 'smsc' => $smsc, 'request_time'=>$requestTime);
         $_data = json_encode($data);
 
 //        $text = $serviceID. '*'. $msisdn. '*'. $senderID . '*SRCM'. $srcModule . '*'. $dlr . '*' . $smsc. '*'. $billingTime. '*';
