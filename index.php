@@ -269,9 +269,12 @@ $app->group('', function (){
         $serviceName = $request->getParam('serv_name');
         $dp_retry = $request->getParam('dp_retry');
 
-        $text = $serviceID. '*'. $msisdn. '*'. $senderID . '*SRCM'. $srcModule . '*'. $dlr . '*' . $smsc. '*'. $billingTime. '*';
+        $data = array('msisdn' => $msisdn, 'serv_id'=> $serviceID, 'scrm' => $srcModule, 'dlr' => $dlr, 'sender_id' => $senderID, 'smsc' => $smsc, 'billing_time'=>$billingTime);
+        $_data = json_encode($data);
 
-        $msg = new AMQPMessage($text);
+//        $text = $serviceID. '*'. $msisdn. '*'. $senderID . '*SRCM'. $srcModule . '*'. $dlr . '*' . $smsc. '*'. $billingTime. '*';
+
+        $msg = new AMQPMessage($_data);
         $channel->basic_publish($msg, '', $que);
 
 //        $file = 'dlr.log';

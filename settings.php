@@ -21,7 +21,7 @@ return [
     ],
     'networks' => array("etisalat"=>10),
     'dlr_mask' => 31,
-    'dlr_url' => 'http://sponge.atp-sevas.com/rabbitmq/dlr',
+    'dlr_url' => 'http://sponge.atp-sevas.com/hay/dlr',
 
     // Monolog settings
     'logger' => [
