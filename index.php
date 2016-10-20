@@ -30,11 +30,10 @@ $service = new Service($redis);
 $GLOBALS['service'] = $service;
 
 $connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
-//$connection = new ExtendedConnection('localhost', 5672, 'guest', 'guest');
 $channel = $connection->channel();
 
 $GLOBALS['channel'] = $channel;
-$GLOBALS['connection'] = $connection;$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
+$GLOBALS['connection'] = $connection;
 //$connection = new ExtendedConnection('localhost', 5672, 'guest', 'guest');
 $channel = $connection->channel();
 $GLOBALS['settings'] = require __DIR__.'/settings.php';;
@@ -160,6 +159,18 @@ $app->group('', function (){
             array_push($message_params, array('timestamp' => $time));
         }
 
+        $queue = $request->getParam('queue');
+
+        if (!$queue) {
+            $queue = $settings['queue_name'];
+        }
+        else {
+
+            $channel->exchange_declare($queue, 'headers', false, true, false);
+            $channel->queue_declare($queue, false, true, false, false);
+            $channel->queue_bind($queue, 'exchange');
+        }
+
         $message = new AMQPMessage($text, $message_params);
 
         $domain = $settings['external_url']['domain'];
@@ -180,7 +191,7 @@ $app->group('', function (){
             'dlr_mask' => $dlr_mask
         ));
         $message->set('application_headers', $headers);
-        $channel->basic_publish($message, $settings['exchange_name'], $settings['queue_name']);
+        $channel->basic_publish($message, $settings['exchange_name'], $queue);
 
         $channel->close();
 
