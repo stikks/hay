@@ -3,8 +3,8 @@ require __DIR__ . '/vendor/autoload.php';
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 use PhpAmqpLib\Wire\AMQPTable;
-require __DIR__ . '/vendor/predis/predis/autoload.php';
 use Predis\Client;
+
 require __DIR__.'/Service.php';
 use Service\Service;
 
@@ -31,19 +31,11 @@ $GLOBALS['service'] = $service;
 
 $connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
 $channel = $connection->channel();
-
-$GLOBALS['channel'] = $channel;
-$GLOBALS['connection'] = $connection;
-//$connection = new ExtendedConnection('localhost', 5672, 'guest', 'guest');
-$channel = $connection->channel();
-$GLOBALS['settings'] = require __DIR__.'/settings.php';;
-
-$settings = $GLOBALS['settings'];
+$settings = require __DIR__.'/settings.php';;
 
 $channel->exchange_declare('exchange', 'headers', false, true, false);
 $channel->queue_declare('queue', false, true, false, false);
 $channel->queue_bind('queue', 'exchange');
-
 
 $channel->exchange_declare($settings['exchange_name'], 'headers', false, true, false, false, false, new AMQPTable(array(
     "x-delayed-type" => "headers"
@@ -56,8 +48,11 @@ $channel->queue_declare($settings['queue_name'], false, true, false, false, fals
 )));
 
 $channel->queue_declare('persistent_sevas', false, true, false, false);
-
 $channel->queue_bind($settings['queue_name'], $settings['exchange_name']);
+
+$GLOBALS['channel'] = $channel;
+$GLOBALS['connection'] = $connection;
+$GLOBALS['settings'] =  $settings;
 
 $app = new \Slim\App();
 
@@ -145,6 +140,7 @@ $app->group('', function (){
 
         $channel = $GLOBALS['channel'];
         $service = $GLOBALS['service'];
+        $connection = $GLOBALS['connection'];
 
         $time = $service->get_timestamp($tps);
 
@@ -193,7 +189,11 @@ $app->group('', function (){
         $message->set('application_headers', $headers);
         $channel->basic_publish($message, $settings['exchange_name'], $queue);
 
+        $data = '[DATETIME:'. time() .'][STATUS: Queued][SMSC:'. $smsc .'][FROM:'.$from.'][TO:'.$recipient.'][MSG:'.$text.'][DLR_MASK:'.$dlr_mask.'][DLR:'.$dlr.']';
+        $this->log->debug($data);
+
         $channel->close();
+        $connection->close();
 
         return $response->withStatus(202)
             ->write('Task added to queue');
@@ -265,6 +265,7 @@ $app->group('', function (){
 
         $service = $GLOBALS['service'];
         $channel = $GLOBALS['channel'];
+        $connection = $GLOBALS['connection'];
 
         $que = $request->getParam('queue');
 
@@ -280,8 +281,8 @@ $app->group('', function (){
         $serviceName = $request->getParam('serv_name');
         $dp_retry = $request->getParam('dp_retry');
 
-        $data = array('msisdn' => $msisdn, 'serv_id'=> $serviceID, 'scrm' => $srcModule, 'dlr' => $dlr, 'sender_id' => $senderID, 'smsc' => $smsc, 'request_time'=>$requestTime);
-        $_data = json_encode($data);
+        $__data = array('msisdn' => $msisdn, 'serv_id'=> $serviceID, 'scrm' => $srcModule, 'dlr' => $dlr, 'sender_id' => $senderID, 'smsc' => $smsc, 'request_time'=>$requestTime);
+        $_data = json_encode($__data);
 
 //        $text = $serviceID. '*'. $msisdn. '*'. $senderID . '*SRCM'. $srcModule . '*'. $dlr . '*' . $smsc. '*'. $billingTime. '*';
 
@@ -289,10 +290,12 @@ $app->group('', function (){
         $channel->basic_publish($msg, '', $que);
 
 //        $file = 'dlr.log';
-//        $data = '[DATETIME:'. $billingTime .'][STATUS: Accepted][SMSC:'. $smsc .'][FROM:'.$senderID.'][TO:'.$msisdn.'][MSG:'.$message.']';
+        $data = '[DATETIME:'. $requestTime .'][STATUS: Accepted][SMSC:'. $smsc .'][FROM:'.$senderID.'][TO:'.$msisdn.'][MSG:'.$message.'][SRCM:'.$srcModule.'][SERVICE_ID:'.$serviceID.'][DLR:'.$dlr.']';
+        $this->log->debug($data);
 //        file_put_contents($file, $data.PHP_EOL, FILE_APPEND);
 
         $channel->close();
+        $connection->close();
 
         return $response->withStatus(202)
             ->write('Task added to queue');
@@ -328,10 +331,11 @@ $app->group('', function (){
         }
 
         $channel = $GLOBALS['channel'];
-
+        $connection = $GLOBALS['connection'];
         $declaration = $channel->queue_declare($queue, false, true, false, false);
 
         $channel->close();
+        $connection->close();
 
         return $response->withStatus(200)
             ->withHeader('Content-Type', 'application/json')
