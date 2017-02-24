@@ -1,8 +1,10 @@
 <?php
 
 require_once __DIR__ . '/vendor/autoload.php';
+use Predis\Client;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 $connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
+$redis = new Client();
 
 echo ' [*] Waiting for messages. To exit press CTRL+C', "\n";
 

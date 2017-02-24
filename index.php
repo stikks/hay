@@ -1,4 +1,6 @@
 <?php
+date_default_timezone_set('Africa/Lagos');
+
 require __DIR__ . '/vendor/autoload.php';
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -158,11 +160,11 @@ $app->group('', function (){
             array_push($message_params, array('timestamp' => $time));
         }
 
-        $queue = $request->getParam('queue');
+//        $queue = $request->getParam('queue');
 
-        if (!$queue) {
-            $queue = $settings['queue_name'];
-        }
+//        if (!$queue) {
+        $queue = $settings['queue_name'];
+//        }
 
         $channel->exchange_declare($queue, 'headers', false, true, false, false, false, new AMQPTable(array(
             "x-delayed-type" => "headers"
@@ -304,8 +306,11 @@ $app->group('', function (){
 
 //        $file = 'dlr.log';
         $data = '[DATETIME:'. $requestTime .'][STATUS: Accepted][SMSC:'. $smsc .'][FROM:'.$senderID.'][TO:'.$msisdn.'][MSG:'.$message.'][SRCM:'.$srcModule.'][SERVICE_ID:'.$serviceID.'][DLR:'.$dlr.']';
-        $this->log->debug($data);
-//        file_put_contents($file, $data.PHP_EOL, FILE_APPEND);
+
+        $settings = require __DIR__.'/settings.php';
+        $log = new Logger($settings['logger']['name']);
+        $log->pushHandler(new StreamHandler('dlr.log', Logger::INFO));
+        $log->info($data);
 
         $channel->close();
         $connection->close();
