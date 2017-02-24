@@ -41,14 +41,14 @@ $channel->exchange_declare($settings['exchange_name'], 'headers', false, true, f
     "x-delayed-type" => "headers"
 )));
 
-$channel->queue_declare($settings['queue_name'], false, true, false, false, false, new AMQPTable(array(
-    "x-dead-letter-exchange" => $settings['exchange_name'],
-//    'x-message-ttl' => $settings['delay'],
-    'x-dead-letter-routing-key' => $settings['queue_name']
-)));
+//$channel->queue_declare($settings['queue_name'], false, true, false, false, false, new AMQPTable(array(
+//    "x-dead-letter-exchange" => $settings['exchange_name'],
+////    'x-message-ttl' => $settings['delay'],
+//    'x-dead-letter-routing-key' => $settings['queue_name']
+//)));
 
 $channel->queue_declare('persistent_sevas', false, true, false, false);
-$channel->queue_bind($settings['queue_name'], $settings['exchange_name']);
+//$channel->queue_bind($settings['queue_name'], $settings['exchange_name']);
 
 $GLOBALS['channel'] = $channel;
 $GLOBALS['connection'] = $connection;

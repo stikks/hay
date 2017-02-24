@@ -22,9 +22,7 @@ $callback = function($msg) {
 $settings = require __DIR__.'/settings.php';
 
 $channel = $connection->channel();
-
 $channel->basic_qos(null, 1, null);
-
 $channel->basic_consume($settings['queue_name'], '', false, true, false, false, $callback);
 
 while(count($channel->callbacks)) {
