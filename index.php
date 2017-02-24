@@ -4,6 +4,8 @@ use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 use PhpAmqpLib\Wire\AMQPTable;
 use Predis\Client;
+use Monolog\Logger;
+use Monolog\Handler\RotatingFileHandler;
 
 require __DIR__.'/Service.php';
 use Service\Service;
@@ -190,7 +192,11 @@ $app->group('', function (){
         $channel->basic_publish($message, $settings['exchange_name'], $queue);
 
         $data = '[DATETIME:'. time() .'][STATUS: Queued][SMSC:'. $smsc .'][FROM:'.$from.'][TO:'.$recipient.'][MSG:'.$text.'][DLR_MASK:'.$dlr_mask.'][DLR:'.$dlr.']';
-        $this->log->debug($data);
+        $this->log->debug();
+
+        $log = new Logger($settings['logger']['name']);
+        $log->pushHandler(new Monolog\Handler\RotatingFileHandler($settings['logger']['path'], $settings['logger']['maxFiles'], Logger::INFO));
+        $log->info($data);
 
         $channel->close();
         $connection->close();
