@@ -35,22 +35,22 @@ $connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
 $channel = $connection->channel();
 $settings = require __DIR__.'/settings.php';;
 
-$channel->exchange_declare('exchange', 'headers', false, true, false);
-$channel->queue_declare('queue', false, true, false, false);
-$channel->queue_bind('queue', 'exchange');
+//$channel->exchange_declare('exchange', 'headers', false, true, false);
+//$channel->queue_declare('queue', false, true, false, false);
+//$channel->queue_bind('queue', 'exchange');
 
-$channel->exchange_declare($settings['exchange_name'], 'headers', false, true, false, false, false, new AMQPTable(array(
-    "x-delayed-type" => "headers"
-)));
-
-$channel->queue_declare($settings['queue_name'], false, true, false, false, false, new AMQPTable(array(
-    "x-dead-letter-exchange" => $settings['exchange_name'],
-//    'x-message-ttl' => $settings['delay'],
-    'x-dead-letter-routing-key' => $settings['queue_name']
-)));
-
-//$channel->queue_declare('persistent_sevas', false, true, false, false);
-$channel->queue_bind($settings['queue_name'], $settings['exchange_name']);
+//$channel->exchange_declare($settings['exchange_name'], 'headers', false, true, false, false, false, new AMQPTable(array(
+//    "x-delayed-type" => "headers"
+//)));
+//
+//$channel->queue_declare($settings['queue_name'], false, true, false, false, false, new AMQPTable(array(
+//    "x-dead-letter-exchange" => $settings['exchange_name'],
+////    'x-message-ttl' => $settings['delay'],
+//    'x-dead-letter-routing-key' => $settings['queue_name']
+//)));
+//
+////$channel->queue_declare('persistent_sevas', false, true, false, false);
+//$channel->queue_bind($settings['queue_name'], $settings['exchange_name']);
 
 $GLOBALS['channel'] = $channel;
 $GLOBALS['connection'] = $connection;
@@ -162,12 +162,17 @@ $app->group('', function (){
         if (!$queue) {
             $queue = $settings['queue_name'];
         }
-        else {
 
-            $channel->exchange_declare($queue, 'headers', false, true, false);
-            $channel->queue_declare($queue, false, true, false, false);
-            $channel->queue_bind($queue, 'exchange');
-        }
+        $channel->exchange_declare($queue, 'headers', false, true, false, false, false, new AMQPTable(array(
+            "x-delayed-type" => "headers"
+        )));
+
+        $channel->queue_declare($queue, false, true, false, false, false, new AMQPTable(array(
+            "x-dead-letter-exchange" => $queue,
+            'x-dead-letter-routing-key' => $queue
+        )));
+
+        $channel->queue_bind($queue, $queue);
 
         $message = new AMQPMessage($text, $message_params);
 
