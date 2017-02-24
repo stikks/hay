@@ -28,16 +28,6 @@ ini_set('display_startup_errors', 1);
 
 session_start();
 
-# connect to redis
-$redis = new Client();
-
-$service = new Service($redis);
-$GLOBALS['service'] = $service;
-
-$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
-$channel = $connection->channel();
-$settings = require __DIR__.'/settings.php';;
-
 //$channel->exchange_declare('exchange', 'headers', false, true, false);
 //$channel->queue_declare('queue', false, true, false, false);
 //$channel->queue_bind('queue', 'exchange');
@@ -55,16 +45,135 @@ $settings = require __DIR__.'/settings.php';;
 ////$channel->queue_declare('persistent_sevas', false, true, false, false);
 //$channel->queue_bind($settings['queue_name'], $settings['exchange_name']);
 
-$GLOBALS['channel'] = $channel;
-$GLOBALS['connection'] = $connection;
-$GLOBALS['settings'] =  $settings;
-
 $app = new \Slim\App();
 
 $app->group('', function (){
+
+    $this->post('/upload', function ($request, $response) {
+
+        if(count($_FILES) == 0 || !isset($_FILES['msisdns'])) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('msisdn csv missing');
+        }
+
+        $uploads_dir = 'uploads';
+
+        move_uploaded_file($_FILES['msisdns']['tmp_name'], $uploads_dir.'/'.$_FILES['msisdns']['name']);
+        $path = $uploads_dir.'/'.$_FILES['msisdns']['name'];
+        $csv = array_map('str_getcsv', file($path));
+
+        $from = $request->getParam('from');
+
+        if(!$from) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('from missing');
+        }
+
+        $text = $request->getParam('text');
+
+        if (!$text) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('Text missing');
+        }
+
+        $service = new Service();
+        $settings = $service->settings;
+
+        $dlr_mask = $request->getParam('dlr_mask');
+
+        if(!$dlr_mask) {
+            $dlr_mask = $settings['dlr_mask'];
+        }
+
+        $dlr = $request->getParam('dlr_url');
+
+        if (!$dlr) {
+            $dlr = $settings['dlr_url'];
+        }
+
+        $dlr_url = urlencode(urldecode($dlr));
+
+        $username = $request->getParam('username');
+
+        if(!$username) {
+            $username = $settings['external_url']['username'];
+        }
+
+        $password = $request->getParam('password');
+
+        if (!$password) {
+            $password = $settings['external_url']['password'];
+        }
+
+        $host = $request->getParam('host');
+
+        if (!$host) {
+            $host = $settings['external_url']['host'];
+        }
+
+        $port = $request->getParam('port');
+
+        if (!$port) {
+            $port = $settings['external_url']['port'];
+        }
+
+        $smsc = $request->getParam('smsc');
+
+        if (!$smsc) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('smsc missing');
+        }
+
+        if (in_array(strtolower($smsc), $settings['networks'])) {
+            $tps = $settings['networks'][strtolower($smsc)];
+        }
+        else {
+            $tps = $settings['tps'];
+        }
+
+        $message_params = array(
+            'delivery_mode' => 2,
+            'priority' => 1,
+        );
+
+        $time = $service->get_timestamp($tps);
+        array_push($message_params, array('timestamp' => $time));
+
+        $domain = $settings['external_url']['domain'];
+        $route = $settings['external_url']['route'];
+
+        $url = 'http://'. $host. '.'.  $domain. ':'. $port. $route;
+
+        $headers = array(
+            "x-delay" => $settings['delay'],
+            'url' => $url,
+            'timestamp'=> $time,
+            'smsc' => $smsc,
+            'username' => $username,
+            'password' => $password,
+            'from' => $from,
+            'dlr_url' => $dlr_url,
+            'dlr_mask' => $dlr_mask
+        );
+
+        $args = array('message_params' => $message_params, 'text' => $text, 'headers' => $headers, 'recipients'=>$csv);
+
+        Resque::enqueue('default', 'Job', $args);
+
+        return $response->withStatus(202)
+            ->write('Task Queued');
+    });
+
     $this->get('/sendsms', function ($request, $response){
 
-        $settings = require __DIR__.'/settings.php';
+        $service = new Service();
+        $settings = $service->settings;
+        $connection = $service->init_rabbitmq($settings['amqp']['host'], $settings['amqp']['port'], $settings['amqp']['username'], $settings['amqp']['password']);
+        $channel = $connection->channel();
 
         $from = $request->getParam('from');
 
@@ -143,10 +252,6 @@ $app->group('', function (){
             $tps = $settings['tps'];
         }
 
-        $channel = $GLOBALS['channel'];
-        $service = $GLOBALS['service'];
-        $connection = $GLOBALS['connection'];
-
         $time = $service->get_timestamp($tps);
 
         $message_params = array(
@@ -163,8 +268,9 @@ $app->group('', function (){
 //        $queue = $request->getParam('queue');
 
 //        if (!$queue) {
-        $queue = $settings['queue_name'];
 //        }
+
+        $queue = $settings['queue_name'];
 
         $channel->exchange_declare($queue, 'headers', false, true, false, false, false, new AMQPTable(array(
             "x-delayed-type" => "headers"

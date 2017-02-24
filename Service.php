@@ -8,16 +8,40 @@
  */
 
 namespace Service;
-
-$GLOBALS['settings'] = require __DIR__.'/settings.php';
+use Predis\Client;
+use PhpAmqpLib\Connection\AMQPStreamConnection;
+use PhpAmqpLib\Wire\AMQPTable;
 
 class Service
 {
     protected $redis;
 
-    public function __construct($redis)
+    public function __construct()
     {
-        $this->redis = $redis;
+        $this->redis = new Client();
+        $this->settings = require __DIR__.'/settings.php';
+    }
+
+    public function init_rabbitmq($host, $port, $username, $password) {
+        $connection = new AMQPStreamConnection($host, $port, $username, $password);
+        $this->connection = $connection;
+        return $connection;
+    }
+
+    public function declare_queue($channel, $queue) {
+
+        $channel->exchange_declare($queue, 'headers', false, true, false, false, false, new AMQPTable(array(
+            "x-delayed-type" => "headers"
+        )));
+
+        $channel->queue_declare($queue, false, true, false, false, false, new AMQPTable(array(
+            "x-dead-letter-exchange" => $queue,
+            'x-dead-letter-routing-key' => $queue
+        )));
+
+        $channel->queue_bind($queue, $queue);
+
+        return $channel;
     }
 
     public function get_timestamp($limit) {
