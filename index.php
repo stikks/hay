@@ -265,11 +265,6 @@ $app->group('', function (){
             array_push($message_params, array('timestamp' => $time));
         }
 
-//        $queue = $request->getParam('queue');
-
-//        if (!$queue) {
-//        }
-
         $queue = $settings['queue_name'];
 
         $channel->exchange_declare($queue, 'headers', false, true, false, false, false, new AMQPTable(array(
@@ -305,10 +300,9 @@ $app->group('', function (){
         $message->set('application_headers', $headers);
         $channel->basic_publish($message, $settings['exchange_name'], $queue);
 
+        //   $log->pushHandler(new Monolog\Handler\RotatingFileHandler($settings['logger']['path'], $settings['logger']['maxFiles'], Logger::INFO));
+
         $data = '[DATETIME:'. time() .'][STATUS: Queued][SMSC:'. $smsc .'][FROM:'.$from.'][TO:'.$recipient.'][MSG:'.$text.'][DLR_MASK:'.$dlr_mask.'][DLR:'.$dlr.']';
-
-//        $log->pushHandler(new Monolog\Handler\RotatingFileHandler($settings['logger']['path'], $settings['logger']['maxFiles'], Logger::INFO));
-
         $log = new Logger($settings['logger']['name']);
         $log->pushHandler(new StreamHandler($settings['logger']['path'], Logger::INFO));
         $log->info($data);

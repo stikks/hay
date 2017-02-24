@@ -9,6 +9,8 @@ require __DIR__ . '/vendor/autoload.php';
 use PhpAmqpLib\Message\AMQPMessage;
 require __DIR__.'/Service.php';
 use Service\Service;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
 
 class Job
 {
@@ -34,6 +36,12 @@ class Job
                 $message = new AMQPMessage($this->args['text'], $message_params);
                 $message->set('application_headers', $headers);
                 $channel->basic_publish($message, $settings['exchange_name'], $settings['queue_name']);
+
+                $data = '[DATETIME:'. time() .'][STATUS: Queued][SMSC:'. $headers['smsc'] .'][FROM:'.$headers['from'].'][TO:'.$rex.'][MSG:'.$headers['text'].'][DLR_MASK:'.$headers['dlr_mask'].'][DLR:'.$headers['dlr'].']';
+                $log = new Logger($settings['logger']['name']);
+                $log->pushHandler(new StreamHandler($settings['logger']['path'], Logger::INFO));
+                $log->info($data);
+
             }
 
             $channel->close();
