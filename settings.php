@@ -26,7 +26,7 @@ return [
     // Monolog settings
     'logger' => [
         'name' => 'slim-app',
-        'path' => __DIR__ . '/../logs/app.log',
-        'maxFiles' => 500 * 1024
+        'path' => 'send-sms.log',
+        'maxFiles' => 0
     ],
 ];
