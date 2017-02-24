@@ -5,6 +5,7 @@
  * Date: 2/24/17
  * Time: 1:29 PM
  */
+date_default_timezone_set('Africa/Lagos');
 require __DIR__ . '/vendor/autoload.php';
 use PhpAmqpLib\Message\AMQPMessage;
 require __DIR__.'/Service.php';

@@ -1,5 +1,5 @@
 <?php
-
+date_default_timezone_set('Africa/Lagos');
 $settings = require_once 'settings.php';
 foreach ($settings['redis'] as $key => $value) {
     putenv(sprintf('%s=%s', $key, $value));
