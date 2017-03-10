@@ -15,20 +15,22 @@ echo ' [*] Waiting for messages. To exit press CTRL+C', "\n";
 
 $callback = function($msg) {
 
-    $headers = $msg->get('application_headers');
-    $nativeData = $headers->getNativeData();
-    $service = new Service();
-    $settings = $service->settings;
-
-    foreach ($nativeData['to'] as $rex) {
-        echo $rex;
-        $url = '' . $nativeData['url'] . '?username=' . $nativeData['username'] . '&password=' . $nativeData['password'] . '&to=' . $rex . '&text=' . $msg->body . '&from=' . $nativeData['from'] . '&smsc=' . $nativeData['smsc'] . '&dlr_mask=' . $nativeData['dlr_mask'] . '&dlr_url=' . $nativeData['dlr_url'] . '';
-        file_get_contents($url);
-        $data = '[DATETIME:' . $nativeData['timestamp'] . '][STATUS: Accepted][SMSC:' . $nativeData['smsc'] . '][FROM:' . $nativeData['from'] . '][TO:' . $rex . '][MSG:' . $msg->body . ']';
-        $log = new Logger('messages.log');
-        $log->pushHandler(new StreamHandler($settings['logger']['path'], Logger::INFO));
-        $log->info($data);
-    }
+    var_dump($msg->body);
+    exit();
+//    $headers = $msg->get('application_headers');
+//    $nativeData = $headers->getNativeData();
+//    $service = new Service();
+//    $settings = $service->settings;
+//
+//    foreach ($nativeData['to'] as $rex) {
+//        echo $rex;
+//        $url = '' . $nativeData['url'] . '?username=' . $nativeData['username'] . '&password=' . $nativeData['password'] . '&to=' . $rex . '&text=' . $msg->body . '&from=' . $nativeData['from'] . '&smsc=' . $nativeData['smsc'] . '&dlr_mask=' . $nativeData['dlr_mask'] . '&dlr_url=' . $nativeData['dlr_url'] . '';
+//        file_get_contents($url);
+//        $data = '[DATETIME:' . $nativeData['timestamp'] . '][STATUS: Accepted][SMSC:' . $nativeData['smsc'] . '][FROM:' . $nativeData['from'] . '][TO:' . $rex . '][MSG:' . $msg->body . ']';
+//        $log = new Logger('messages.log');
+//        $log->pushHandler(new StreamHandler($settings['logger']['path'], Logger::INFO));
+//        $log->info($data);
+//    }
 };
 
 $connection = $service->init_rabbitmq($settings['amqp']['host'], $settings['amqp']['port'], $settings['amqp']['username'], $settings['amqp']['password']);
