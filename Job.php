@@ -34,8 +34,9 @@ class Job
                 $time = $service->get_timestamp($settings['tps']);
                 $message_params = $this->args['message_params'];
                 array_push($message_params, array('timestamp' => $time));
+                $headers['timestamp'] = $time;
 
-                $message = new AMQPMessage($headers, $message_params);
+                $message = new AMQPMessage($headers);
 //                $message->set('application_headers', $headers);
                 $channel->basic_publish($message, $settings['exchange_name'], $settings['queue_name']);
 
