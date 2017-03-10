@@ -26,6 +26,9 @@ class Job
 
             $recipients = $this->args['recipients'];
 
+            var_dump($recipients);
+            exit();
+
             foreach ($recipients as $rex) {
                 $headers = $this->args['headers'];
                 $headers['recipient'] = $rex;
@@ -40,10 +43,10 @@ class Job
 //                $message->set('application_headers', $headers);
                 $channel->basic_publish($message, $settings['exchange_name'], $settings['queue_name']);
 
-//                $data = '[DATETIME:'. time() .'][STATUS: Queued][SMSC:'. $headers['smsc'] .'][FROM:'.$headers['from'].'][TO:'.$rex.'][MSG:'.$headers['text'].'][DLR_MASK:'.$headers['dlr_mask'].'][DLR:'.$headers['dlr_url'].']';
-//                $log = new Logger($settings['logger']['name']);
-//                $log->pushHandler(new StreamHandler($settings['logger']['path'], Logger::INFO));
-//                $log->info($data);
+                $data = '[DATETIME:'. time() .'][STATUS: Queued][SMSC:'. $headers['smsc'] .'][FROM:'.$headers['from'].'][TO:'.$rex.'][MSG:'.$headers['text'].'][DLR_MASK:'.$headers['dlr_mask'].'][DLR:'.$headers['dlr_url'].']';
+                $log = new Logger($settings['logger']['name']);
+                $log->pushHandler(new StreamHandler($settings['logger']['path'], Logger::INFO));
+                $log->info($data);
 
             }
 
