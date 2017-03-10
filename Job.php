@@ -36,7 +36,7 @@ class Job
                 array_push($message_params, array('timestamp' => $time));
                 $headers['timestamp'] = $time;
 
-                $message = new AMQPMessage($headers);
+                $message = new AMQPMessage(json_encode($headers));
 //                $message->set('application_headers', $headers);
                 $channel->basic_publish($message, $settings['exchange_name'], $settings['queue_name']);
 
