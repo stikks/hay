@@ -49,7 +49,7 @@ $app = new \Slim\App();
 
 $app->group('', function (){
 
-    $this->post('/upload', function ($request, $response) {
+    $this->post('/resque-upload', function ($request, $response) {
 
         if(count($_FILES) == 0 || !isset($_FILES['msisdns'])) {
             return $response->withStatus(404)
@@ -163,6 +163,134 @@ $app->group('', function (){
         $args = array('message_params' => $message_params, 'text' => $text, 'headers' => $headers, 'recipients'=>$csv);
 
         Resque::enqueue('default', 'Job', $args);
+
+        return $response->withStatus(202)
+            ->write('Task Queued');
+    });
+
+    $this->post('/upload', function ($request, $response) {
+
+        if(count($_FILES) == 0 || !isset($_FILES['msisdns'])) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('msisdn csv missing');
+        }
+
+        $uploads_dir = 'uploads';
+
+        move_uploaded_file($_FILES['msisdns']['tmp_name'], $uploads_dir.'/'.$_FILES['msisdns']['name']);
+        $path = $uploads_dir.'/'.$_FILES['msisdns']['name'];
+        $csv = array_map('str_getcsv', file($path));
+
+        $from = $request->getParam('from');
+
+        if(!$from) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('from missing');
+        }
+
+        $text = $request->getParam('text');
+
+        if (!$text) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('Text missing');
+        }
+
+        $service = new Service();
+        $settings = $service->settings;
+
+        $dlr_mask = $request->getParam('dlr_mask');
+
+        if(!$dlr_mask) {
+            $dlr_mask = $settings['dlr_mask'];
+        }
+
+        $dlr = $request->getParam('dlr_url');
+
+        if (!$dlr) {
+            $dlr = $settings['dlr_url'];
+        }
+
+        $dlr_url = urlencode(urldecode($dlr));
+
+        $username = $request->getParam('username');
+
+        if(!$username) {
+            $username = $settings['external_url']['username'];
+        }
+
+        $password = $request->getParam('password');
+
+        if (!$password) {
+            $password = $settings['external_url']['password'];
+        }
+
+        $host = $request->getParam('host');
+
+        if (!$host) {
+            $host = $settings['external_url']['host'];
+        }
+
+        $port = $request->getParam('port');
+
+        if (!$port) {
+            $port = $settings['external_url']['port'];
+        }
+
+        $smsc = $request->getParam('smsc');
+
+        if (!$smsc) {
+            return $response->withStatus(404)
+                ->withHeader('Content-Type', 'text/html')
+                ->write('smsc missing');
+        }
+
+        if (in_array(strtolower($smsc), $settings['networks'])) {
+            $tps = $settings['networks'][strtolower($smsc)];
+        }
+        else {
+            $tps = $settings['tps'];
+        }
+
+        $message_params = array(
+            'delivery_mode' => 2,
+            'priority' => 1,
+        );
+
+        $time = $service->get_timestamp($tps);
+        array_push($message_params, array('timestamp' => $time));
+
+        $domain = $settings['external_url']['domain'];
+        $route = $settings['external_url']['route'];
+
+        $url = 'http://'. $host. '.'.  $domain. ':'. $port. $route;
+
+        $headers = array(
+            "x-delay" => $settings['delay'],
+            'url' => $url,
+            'timestamp'=> $time,
+            'smsc' => $smsc,
+            'username' => $username,
+            'password' => $password,
+            'from' => $from,
+            'to' => $csv,
+            'dlr_url' => $dlr_url,
+            'dlr_mask' => $dlr_mask
+        );
+
+        $connection = $service->init_rabbitmq($settings['amqp']['host'], $settings['amqp']['port'], $settings['amqp']['username'], $settings['amqp']['password']);
+        $channel = $connection->channel();
+        $channel = $service->declare_queue($channel, $settings['queue_name']);
+        $message = new AMQPMessage($this->args['text'], $message_params);
+        $message->set('application_headers', $headers);
+        $channel->basic_publish($message, $settings['exchange_name'], $settings['queue_name']);
+
+        $data = '[DATETIME:'. time() .'][STATUS: Queued][SMSC:'. $headers['smsc'] .'][FROM:'.$headers['from'].'][MSG:'.$headers['text'].'][DLR_MASK:'.$headers['dlr_mask'].'][DLR:'.$headers['dlr'].']';
+        $log = new Logger($settings['logger']['name']);
+        $log->pushHandler(new StreamHandler($settings['logger']['path'], Logger::INFO));
+        $log->info($data);
 
         return $response->withStatus(202)
             ->write('Task Queued');
