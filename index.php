@@ -284,7 +284,7 @@ $app->group('', function (){
         $connection = $service->init_rabbitmq($settings['amqp']['host'], $settings['amqp']['port'], $settings['amqp']['username'], $settings['amqp']['password']);
         $channel = $connection->channel();
         $channel = $service->declare_queue($channel, $settings['queue_name']);
-        $message = new AMQPMessage($body);
+        $message = new AMQPMessage(json_encode($body));
 //        $message->set('application_headers', $headers);
         $channel->basic_publish($message, $settings['exchange_name'], $settings['queue_name']);
 
