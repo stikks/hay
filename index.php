@@ -292,6 +292,9 @@ $app->group('', function (){
         $log->pushHandler(new StreamHandler($settings['logger']['path'], Logger::INFO));
         $log->info($data);
 
+        $channel->close();
+        $connection->close();
+
         return $response->withStatus(202)
             ->write('Task Queued');
     });
