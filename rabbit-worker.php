@@ -20,12 +20,15 @@ $callback = function($msg) {
     $service = new Service();
     $settings = $service->settings;
 
-    $url = '' . $nativeData['url'] . '?username=' . $nativeData['username'] . '&password=' . $nativeData['password'] . '&to=' . $nativeData['to'] . '&text=' . $msg->body . '&from=' . $nativeData['from'] . '&smsc=' . $nativeData['smsc'] . '&dlr_mask=' . $nativeData['dlr_mask'] . '&dlr_url=' . $nativeData['dlr_url'] . '';
-    file_get_contents($url);
-    $data = '[DATETIME:' . $nativeData['timestamp'] . '][STATUS: Accepted][SMSC:' . $nativeData['smsc'] . '][FROM:' . $nativeData['from'] . '][TO:' . $nativeData['to'] . '][MSG:' . $msg->body . ']';
-    $log = new Logger('messages.log');
-    $log->pushHandler(new StreamHandler($settings['logger']['path'], Logger::INFO));
-    $log->info($data);
+    foreach ($nativeData['to'] as $rex) {
+        echo $rex;
+        $url = '' . $nativeData['url'] . '?username=' . $nativeData['username'] . '&password=' . $nativeData['password'] . '&to=' . $rex . '&text=' . $msg->body . '&from=' . $nativeData['from'] . '&smsc=' . $nativeData['smsc'] . '&dlr_mask=' . $nativeData['dlr_mask'] . '&dlr_url=' . $nativeData['dlr_url'] . '';
+        file_get_contents($url);
+        $data = '[DATETIME:' . $nativeData['timestamp'] . '][STATUS: Accepted][SMSC:' . $nativeData['smsc'] . '][FROM:' . $nativeData['from'] . '][TO:' . $rex . '][MSG:' . $msg->body . ']';
+        $log = new Logger('messages.log');
+        $log->pushHandler(new StreamHandler($settings['logger']['path'], Logger::INFO));
+        $log->info($data);
+    }
 };
 
 $connection = $service->init_rabbitmq($settings['amqp']['host'], $settings['amqp']['port'], $settings['amqp']['username'], $settings['amqp']['password']);
