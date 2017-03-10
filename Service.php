@@ -41,7 +41,7 @@ class Service
 
         $channel->exchange_declare($queue, 'headers', false, true, false);
 
-        $channel->queue_declare($queue, false, true, false, false, false,  ['x-max-priority' => ['I', 3600000]]);
+        $channel->queue_declare($queue, false, true, false, false, false);
 
         $channel->queue_bind($queue, $queue);
 
