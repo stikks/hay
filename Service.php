@@ -30,14 +30,18 @@ class Service
 
     public function declare_queue($channel, $queue) {
 
-        $channel->exchange_declare($queue, 'headers', false, true, false, false, false, new AMQPTable(array(
-            "x-delayed-type" => "headers"
-        )));
+//        $channel->exchange_declare($queue, 'headers', false, true, false, false, false, new AMQPTable(array(
+//            "x-delayed-type" => "headers"
+//        )));
+//
+//        $channel->queue_declare($queue, false, true, false, false, false, new AMQPTable(array(
+//            "x-dead-letter-exchange" => $queue,
+//            'x-dead-letter-routing-key' => $queue
+//        )));
 
-        $channel->queue_declare($queue, false, true, false, false, false, new AMQPTable(array(
-            "x-dead-letter-exchange" => $queue,
-            'x-dead-letter-routing-key' => $queue
-        )));
+        $channel->exchange_declare($queue, 'headers', false, true, false);
+
+        $channel->queue_declare($queue, false, true, false, false, false,  ['x-max-priority' => ['I', 3600000]]);
 
         $channel->queue_bind($queue, $queue);
 
