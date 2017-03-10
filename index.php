@@ -267,8 +267,8 @@ $app->group('', function (){
 
         $url = 'http://'. $host. '.'.  $domain. ':'. $port. $route;
 
-        $headers = array(
-            "x-delay" => $settings['delay'],
+        $body = array(
+//            "x-delay" => $settings['delay'],
             'url' => $url,
             'timestamp'=> $time,
             'smsc' => $smsc,
@@ -277,20 +277,21 @@ $app->group('', function (){
             'from' => $from,
             'to' => $csv,
             'dlr_url' => $dlr_url,
-            'dlr_mask' => $dlr_mask
+            'dlr_mask' => $dlr_mask,
+            'text' => $text
         );
 
         $connection = $service->init_rabbitmq($settings['amqp']['host'], $settings['amqp']['port'], $settings['amqp']['username'], $settings['amqp']['password']);
         $channel = $connection->channel();
         $channel = $service->declare_queue($channel, $settings['queue_name']);
-        $message = new AMQPMessage($text, $message_params);
-        $message->set('application_headers', $headers);
+        $message = new AMQPMessage($body);
+//        $message->set('application_headers', $headers);
         $channel->basic_publish($message, $settings['exchange_name'], $settings['queue_name']);
 
-        $data = '[DATETIME:'. time() .'][STATUS: Queued][SMSC:'. $headers['smsc'] .'][FROM:'.$headers['from'].'][MSG:'.$headers['text'].'][DLR_MASK:'.$headers['dlr_mask'].'][DLR:'.$headers['dlr'].']';
-        $log = new Logger($settings['logger']['name']);
-        $log->pushHandler(new StreamHandler($settings['logger']['path'], Logger::INFO));
-        $log->info($data);
+//        $data = '[DATETIME:'. time() .'][STATUS: Queued][SMSC:'. $headers['smsc'] .'][FROM:'.$headers['from'].'][MSG:'.$headers['text'].'][DLR_MASK:'.$headers['dlr_mask'].'][DLR:'.$headers['dlr'].']';
+//        $log = new Logger($settings['logger']['name']);
+//        $log->pushHandler(new StreamHandler($settings['logger']['path'], Logger::INFO));
+//        $log->info($data);
 
         $channel->close();
         $connection->close();

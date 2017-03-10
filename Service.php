@@ -39,7 +39,7 @@ class Service
 //            'x-dead-letter-routing-key' => $queue
 //        )));
 
-        $channel->exchange_declare($queue, 'headers', false, true, false);
+        $channel->exchange_declare($queue, 'fanout', false, true, false);
 
         $channel->queue_declare($queue, false, true, false, false, false);
 
