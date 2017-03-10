@@ -29,16 +29,17 @@ class Job
             foreach ($recipients as $rex) {
                 $headers = $this->args['headers'];
                 $headers['recipient'] = $rex;
+                $headers['text'] = $this->args['text'];
 
                 $time = $service->get_timestamp($settings['tps']);
                 $message_params = $this->args['message_params'];
                 array_push($message_params, array('timestamp' => $time));
 
-                $message = new AMQPMessage($this->args['text'], $message_params);
-                $message->set('application_headers', $headers);
+                $message = new AMQPMessage($headers, $message_params);
+//                $message->set('application_headers', $headers);
                 $channel->basic_publish($message, $settings['exchange_name'], $settings['queue_name']);
 
-                $data = '[DATETIME:'. time() .'][STATUS: Queued][SMSC:'. $headers['smsc'] .'][FROM:'.$headers['from'].'][TO:'.$rex.'][MSG:'.$headers['text'].'][DLR_MASK:'.$headers['dlr_mask'].'][DLR:'.$headers['dlr'].']';
+                $data = '[DATETIME:'. time() .'][STATUS: Queued][SMSC:'. $headers['smsc'] .'][FROM:'.$headers['from'].'][TO:'.$rex.'][MSG:'.$headers['text'].'][DLR_MASK:'.$headers['dlr_mask'].'][DLR:'.$headers['dlr_url'].']';
                 $log = new Logger($settings['logger']['name']);
                 $log->pushHandler(new StreamHandler($settings['logger']['path'], Logger::INFO));
                 $log->info($data);
