@@ -49,7 +49,7 @@ $app = new \Slim\App();
 
 $app->group('', function (){
 
-    $this->post('/upload', function ($request, $response) {
+    $this->post('/resque-upload', function ($request, $response) {
 
         if(count($_FILES) == 0 || !isset($_FILES['msisdns'])) {
             return $response->withStatus(404)
@@ -168,7 +168,7 @@ $app->group('', function (){
             ->write('Task Queued');
     });
 
-    $this->post('/rabbit-upload', function ($request, $response) {
+    $this->post('/upload', function ($request, $response) {
 
         if(count($_FILES) == 0 || !isset($_FILES['msisdns'])) {
             return $response->withStatus(404)
