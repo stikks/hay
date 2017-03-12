@@ -23,9 +23,10 @@ class Job
         $settings = $service->settings;
         $connection = $service->init_rabbitmq($settings['amqp']['host'], $settings['amqp']['port'], $settings['amqp']['username'], $settings['amqp']['password']);
         $channel = $connection->channel();
-//        $channel = $service->declare_queue($channel, $settings['queue_name']);
-
+        $channel->queue_declare($settings['queue_name'], false, true, false, false);
         $channel->exchange_declare($settings['exchange_name'], 'topic', false, false, false);
+        $channel->queue_bind($settings['queue_name'], $settings['exchange_name']);
+
         $recipients = $this->args['recipients'];
 
 //        foreach ($recipients as $rex) {

@@ -305,8 +305,6 @@ $app->group('', function (){
 
         $service = new Service();
         $settings = $service->settings;
-        $connection = $service->init_rabbitmq($settings['amqp']['host'], $settings['amqp']['port'], $settings['amqp']['username'], $settings['amqp']['password']);
-        $channel = $connection->channel();
 
         $from = $request->getParam('from');
 
@@ -398,18 +396,18 @@ $app->group('', function (){
             array_push($message_params, array('timestamp' => $time));
         }
 
-        $queue = $settings['queue_name'];
+//        $queue = $settings['queue_name'];
 
-        $channel->exchange_declare($queue, 'headers', false, true, false, false, false, new AMQPTable(array(
-            "x-delayed-type" => "headers"
-        )));
-
-        $channel->queue_declare($queue, false, true, false, false, false, new AMQPTable(array(
-            "x-dead-letter-exchange" => $queue,
-            'x-dead-letter-routing-key' => $queue
-        )));
-
-        $channel->queue_bind($queue, $queue);
+//        $channel->exchange_declare($queue, 'headers', false, true, false, false, false, new AMQPTable(array(
+//            "x-delayed-type" => "headers"
+//        )));
+//
+//        $channel->queue_declare($queue, false, true, false, false, false, new AMQPTable(array(
+//            "x-dead-letter-exchange" => $queue,
+//            'x-dead-letter-routing-key' => $queue
+//        )));
+//
+//        $channel->queue_bind($queue, $queue);
 
         $message = new AMQPMessage($text, $message_params);
 
@@ -419,19 +417,22 @@ $app->group('', function (){
         $url = 'http://'. $host. '.'.  $domain. ':'. $port. $route;
 
         $headers = new AMQPTable(array(
-            "x-delay" => $settings['delay'],
+//            "x-delay" => $settings['delay'],
             'url' => $url,
             'timestamp'=> $time,
             'smsc' => $smsc,
             'username' => $username,
             'password' => $password,
             'from' => $from,
-            'to' => $recipient,
             'dlr_url' => $dlr_url,
-            'dlr_mask' => $dlr_mask
+            'dlr_mask' => $dlr_mask,
+            'recipients' => array($recipient)
         ));
         $message->set('application_headers', $headers);
-        $channel->basic_publish($message, $settings['exchange_name'], $queue);
+        $connection = $service->init_rabbitmq($settings['amqp']['host'], $settings['amqp']['port'], $settings['amqp']['username'], $settings['amqp']['password']);
+        $channel = $connection->channel();
+        $channel->exchange_declare($settings['exchange_name'], 'topic', false, false, false);
+        $channel->basic_publish($message, $settings['exchange_name']);
 
         //   $log->pushHandler(new Monolog\Handler\RotatingFileHandler($settings['logger']['path'], $settings['logger']['maxFiles'], Logger::INFO));
 
