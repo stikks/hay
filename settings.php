@@ -6,8 +6,8 @@
  * Time: 3:34 PM
  */
 return [
-    'queue_name' => 'hay_queue', // set to false in production
-    'exchange_name' => 'hay_queue', // Allow the web server to send the content-length header
+    'queue_name' => 'hay_resque', // set to false in production
+    'exchange_name' => 'hay_resque', // Allow the web server to send the content-length header
     'log_path' => 'message_queue.log',
     'delay' => 5000,
     'tps' =>10,

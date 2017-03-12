@@ -61,7 +61,8 @@ $app->group('', function (){
 
         move_uploaded_file($_FILES['msisdns']['tmp_name'], $uploads_dir.'/'.$_FILES['msisdns']['name']);
         $path = $uploads_dir.'/'.$_FILES['msisdns']['name'];
-        $csv = array_map('str_getcsv', file($path));
+        $_csv = array_map('str_getcsv', file($path));
+        $csv = array_column($_csv, 0);
 
         $from = $request->getParam('from');
 
@@ -149,7 +150,7 @@ $app->group('', function (){
         $url = 'http://'. $host. '.'.  $domain. ':'. $port. $route;
 
         $headers = array(
-            "x-delay" => $settings['delay'],
+//            "x-delay" => $settings['delay'],
             'url' => $url,
             'timestamp'=> $time,
             'smsc' => $smsc,
