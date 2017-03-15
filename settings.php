@@ -13,11 +13,11 @@ return [
     'tps' =>10,
     'external_url' => [
         'domain' => 'atp-sevas.com',
-        'host' => 'sponge',
+        'host' => 'integrat',
         'port' => 13031,
         'route' => '/cgi-bin/sendsms',
-        'username' => 'sponge',
-        'password'=> 'sponge'
+        'username' => 'integrat',
+        'password'=> 'integrat'
     ],
     'networks' => array("etisalat"=>10),
     'dlr_mask' => 31,

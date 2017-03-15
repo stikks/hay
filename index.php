@@ -9,6 +9,7 @@ use Predis\Client;
 use Monolog\Logger;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Handler\StreamHandler;
+use ResqueScheduler;
 
 require __DIR__.'/Service.php';
 use Service\Service;
@@ -163,7 +164,10 @@ $app->group('', function (){
 
         $args = array('message_params' => $message_params, 'text' => $text, 'headers' => $headers, 'recipients'=>$csv);
 
-        Resque::enqueue('default', 'Job', $args);
+        $in = 3;
+        ResqueScheduler::enqueueIn(0, 'default', 'Job', $args);
+
+//        Resque::enqueue('default', 'Job', $args);
 
         return $response->withStatus(202)
             ->write('Task Queued');
