@@ -5,7 +5,8 @@
         "videlalvaro/php-amqplib": "^2.6",
         "predis/predis": "^1.1",
         "monolog/monolog": "^1.22",
-        "chrisboulton/php-resque": "^1.2"
+        "chrisboulton/php-resque": "^1.2",
+        "guzzlehttp/guzzle": "^6.2"
     },
     "autoload": {
         "psr-4": {"App\\": "src/"},
