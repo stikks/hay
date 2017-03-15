@@ -42,5 +42,6 @@ return [
         'INTERVAL'          => '5',                 // Run every 5 seconds
         'QUEUE'             => '*',                 // Look in all queues
         'PREFIX'            => 'hay',              // Prefix queues with test
-    ]
+    ],
+    'DEFAULT_HTTP_RESPONSE' => 202
 ];

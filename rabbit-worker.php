@@ -24,8 +24,16 @@ $callback = function($msg) {
     foreach ($nativeData['recipients'] as $rex) {
         echo $rex. PHP_EOL;
         $url = '' . $nativeData['url'] . '?username=' . $nativeData['username'] . '&password=' . $nativeData['password'] . '&to=' . $rex . '&text=' . $msg->body . '&from=' . $nativeData['from'] . '&smsc=' . $nativeData['smsc'] . '&dlr_mask=' . $nativeData['dlr_mask'] . '&dlr_url=' . $nativeData['dlr_url'] . '';
-        file_get_contents($url);
-        $data = '[DATETIME:' . $nativeData['timestamp'] . '][STATUS: Accepted][SMSC:' . $nativeData['smsc'] . '][FROM:' . $nativeData['from'] . '][TO:' . $rex . '][MSG:' . $msg->body . '][URL:'. $url. ']';
+//        file_get_contents($url);
+
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_exec($ch);
+        $info = curl_getinfo($ch);
+        $status = $info['http_code'] == $settings['DEFAULT_HTTP_RESPONSE'] ? 'Accepted': 'Failed';
+        curl_close($ch);
+
+        $data = '[DATETIME:' . $nativeData['timestamp'] . '][STATUS:' . $status .'][SMSC:' . $nativeData['smsc'] . '][FROM:' . $nativeData['from'] . '][TO:' . $rex . '][MSG:' . $msg->body . '][URL:'. $url. ']';
         $log = new Logger($settings['logger']['name']);
         $log->pushHandler(new StreamHandler($settings['logger']['path'], Logger::INFO));
         $log->info($data);
