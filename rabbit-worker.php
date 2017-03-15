@@ -28,10 +28,10 @@ $callback = function($msg) {
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_HEADER, 0);
-        $status = curl_exec($ch);
-//        $info = curl_getinfo($ch);
-//        $status = $info['http_code'] == $settings['DEFAULT_HTTP_RESPONSE'] ? 'Accepted': 'Failed';
-//        curl_close($ch);
+        curl_exec($ch);
+        $info = curl_getinfo($ch);
+        $status = $info['http_code'];
+        curl_close($ch);
 
         $data = '[DATETIME:' . $nativeData['timestamp'] . '][STATUS:' . $status .'][SMSC:' . $nativeData['smsc'] . '][FROM:' . $nativeData['from'] . '][TO:' . $rex . '][MSG:' . $msg->body . '][URL:'. $url. ']';
         $log = new Logger($settings['logger']['name']);
