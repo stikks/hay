@@ -21,7 +21,7 @@ return [
     ],
     'networks' => array("etisalat"=>10),
     'dlr_mask' => 31,
-    'dlr_url' => 'http://integrat.atp-sevas.com/hay/dlr',
+    'dlr' => 'http://integrat.atp-sevas.com/hay/dlr',
 
     // Monolog settings
     'logger' => [

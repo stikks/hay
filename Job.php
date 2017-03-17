@@ -74,7 +74,7 @@ class Job
         $message->set('application_headers', $headers);
         $channel->basic_publish($message, $settings['exchange_name']);
 
-        $data = '[DATETIME:'. time() .'][STATUS: Queued][SMSC:'. $head['smsc'] .'][FROM:'.$head['from'].'][MSG:'.$this->args['text'].'][DLR_MASK:'.$head['dlr_mask'].'][DLR:'.$head['dlr_url'].']';
+        $data = '[DATETIME:'. time() .'][STATUS: Queued][SMSC:'. $head['smsc'] .'][FROM:'.$head['from'].'][MSG:'.$this->args['text'].'][DLR_MASK:'.$head['dlr_mask'].'][DLR:'.$head['dlr'].']';
         $log = new Logger($settings['logger']['name']);
         $log->pushHandler(new StreamHandler($settings['logger']['path'], Logger::INFO));
         $log->info($data);

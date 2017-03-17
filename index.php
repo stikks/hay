@@ -90,13 +90,13 @@ $app->group('', function (){
             $dlr_mask = $settings['dlr_mask'];
         }
 
-        $dlr = $request->getParam('dlr_url');
+        $dlr = $request->getParam('dlr');
 
         if (!$dlr) {
-            $dlr = $settings['dlr_url'];
+            $dlr = $settings['dlr'];
         }
 
-        $dlr_url = urlencode(urldecode($dlr));
+        $dlr = urlencode(urldecode($dlr));
 
         $username = $request->getParam('username');
 
@@ -158,7 +158,7 @@ $app->group('', function (){
             'username' => $username,
             'password' => $password,
             'from' => $from,
-            'dlr_url' => $dlr_url,
+            'dlr' => $dlr,
             'dlr_mask' => $dlr_mask
         );
 
@@ -212,13 +212,13 @@ $app->group('', function (){
             $dlr_mask = $settings['dlr_mask'];
         }
 
-        $dlr = $request->getParam('dlr_url');
+        $dlr = $request->getParam('dlr');
 
         if (!$dlr) {
-            $dlr = $settings['dlr_url'];
+            $dlr = $settings['dlr'];
         }
 
-        $dlr_url = urlencode(urldecode($dlr));
+        $dlr = urlencode(urldecode($dlr));
 
         $username = $request->getParam('username');
 
@@ -281,7 +281,7 @@ $app->group('', function (){
             'password' => $password,
             'from' => $from,
             'to' => $csv,
-            'dlr_url' => $dlr_url,
+            'dlr' => $dlr,
             'dlr_mask' => $dlr_mask,
             'text' => $text
         );
@@ -340,13 +340,13 @@ $app->group('', function (){
             $dlr_mask = $settings['dlr_mask'];
         }
 
-        $dlr = $request->getParam('dlr_url');
+        $dlr = $request->getParam('dlr');
 
         if (!$dlr) {
-            $dlr = $settings['dlr_url'];
+            $dlr = $settings['dlr'];
         }
 
-        $dlr_url = urlencode(urldecode($dlr));
+        $dlr = urlencode(urldecode($dlr));
 
         $username = $request->getParam('username');
 
@@ -428,7 +428,7 @@ $app->group('', function (){
             'username' => $username,
             'password' => $password,
             'from' => $from,
-            'dlr_url' => $dlr_url,
+            'dlr' => $dlr,
             'dlr_mask' => $dlr_mask,
             'recipients' => array($recipient)
         ));

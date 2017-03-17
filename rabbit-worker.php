@@ -28,7 +28,7 @@ $callback = function($msg) {
 
         $client = new GuzzleHttp\Client();
         $res = $client->request('GET', $url);
-echo    $status = $res->getStatusCode() == 202 ? 'Accepted': 'Failed';
+        $status = $res->getStatusCode() == 202 ? 'Accepted': 'Failed';
 
         $data = '[DATETIME:' . $nativeData['timestamp'] . '][STATUS:' . $status .'][SMSC:' . $nativeData['smsc'] . '][FROM:' . $nativeData['from'] . '][TO:' . $rex . '][MSG:' . $msg->body . '][URL:'. $url. ']';
         $log = new Logger($settings['logger']['name']);
