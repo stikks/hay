@@ -22,7 +22,14 @@ return [
     'networks' => array("etisalat"=>10),
     'dlr_mask' => 31,
     'dlr' => 'http://integrat.atp-sevas.com/hay/dlr',
-
+    'dlr_params' =>  array(
+        'status' => '%d',
+        'delivery_time' => '%t',
+        'smsc' => '%f',
+        'msisdn' => '%P',
+        'shortcode' => '%p',
+        'metadata' => '%D',
+    ),
     // Monolog settings
     'logger' => [
         'name' => 'slim-app',

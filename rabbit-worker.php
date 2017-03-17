@@ -23,7 +23,7 @@ $callback = function($msg) {
 
     foreach ($nativeData['recipients'] as $rex) {
         echo $rex. PHP_EOL;
-        $url = '' . $nativeData['url'] . '?username=' . $nativeData['username'] . '&password=' . $nativeData['password'] . '&to=' . $rex . '&text=' . $msg->body . '&from=' . $nativeData['from'] . '&smsc=' . $nativeData['smsc'] . '&dlr_mask=' . $nativeData['dlr_mask'] . '&dlr_url=' . $nativeData['dlr_url'] . '';
+        $url = '' . $nativeData['url'] . '?username=' . $nativeData['username'] . '&password=' . $nativeData['password'] . '&to=' . $rex . '&text=' . $msg->body . '&from=' . $nativeData['from'] . '&smsc=' . $nativeData['smsc'] . '&dlr_mask=' . $nativeData['dlr_mask'] . '&dlr=' . $nativeData['dlr'] . '';
 //        file_get_contents($url);
 
         $client = new GuzzleHttp\Client();
